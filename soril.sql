@@ -1,77 +1,86 @@
+DROP DATABASE IF EXISTS hospital_db;
+CREATE DATABASE hospital_db;
+USE hospital_db;
 
-Create database hospital_db;
-Use hospital_db;
-
-create table patients (
-	patient_id int primary key auto_increment,
-    name varchar(100) not null,
-    age int,
-    gender varchar(10),
-    phone varchar(15) unique
-);
-create table doctors(
-	doctor_id int primary key auto_increment,
-    name varchar(100) not null,
-    specialty varchar(100),
-    phone varchar(15) unique
-);
-create table appointments (
-	appointments_id int primary key auto_increment,
-    patient_id int,
-    doctor_id int,
-    appointment_date date,
-    
-    foreign key (patient_id) references patients(patient_id),
-    foreign key (doctor_id) references doctors(doctor)
-);
-create table prescriptions(
-	prescription_id int primary key auto_increment,
-    appointment_id int,
-    medicine varchar(100),
-    dosage varchar(50),
-    
-    foreign key (appointment_id) references appointments(appointment_id)
+CREATE TABLE patients (
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    age INT,
+    gender VARCHAR(10),
+    phone VARCHAR(15) UNIQUE
 );
 
-insert into patients (name, age, gender, phone)
-values
-('bat', 25, 'male', '99999999'),
-('sara', 50, 'famale', '88888888');
-insert into doctors (name, specialty, phone)
-values
-('Dr.Aaw', 'asd', '99119911'),
-('Anhaa', 'sss', '99330575');
-insert into appointments (patient_id, doctor_id, appointment_date)
-values
-(1, 1, '2026-03-25'),
-(2, 1, '2026-03-24'),
-(1, 2, '2026-03-23');
-insert into prescriptions (appointment_id, medicane, dosage)
-values
-(1, 'Haluunii em', '1 udaa/udurt'),
-(2, 'ibuprofen denk', '100udaa/udurt');
+CREATE TABLE doctors (
+    doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    specialty VARCHAR(100),
+    phone VARCHAR(15) UNIQUE
+);
 
-select p.name as patient, d.name as doctor, a.appointment_date
-from appointments a
-join patients p on a.patient_id = p.patient_id
-join doctors d on a.doctor_id = d.doctor_id;
-select d.name, count(a.patient_id) as total_patients
-from doctors d 
-join appointments a on a.doctor_id = a.doctor_id
-group by d.name;
+CREATE TABLE appointments (
+    appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_date DATE NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+);
 
-select p.name, count(*) as visit_count
-from patients p
-join appointments a on p.patient_id = a.patient_id
-group by p.name
-having count(*) >= 2;
+CREATE TABLE prescriptions (
+    prescription_id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT NOT NULL,
+    medicine VARCHAR(100) NOT NULL,
+    dosage VARCHAR(50),
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);
 
+INSERT INTO patients (name, age, gender, phone) VALUES
+('Bat',25,'Male','99112233'),
+('Sara',30,'Female','88112233'),
+('Bold',40,'Male','99113344');
 
+INSERT INTO doctors (name, specialty, phone) VALUES
+('Dr.Amar','Cardiologist','99110000'),
+('Dr.Bold','Dentist','88110000');
 
-create user 'admin_user'@'localhost' identified by '1413';
-create user 'report_user'@'localhost' identified by '1413';
-grant all privileges on hospital_db.* to 'admin_user'@'localhost';
-grant select on hospital_db.* to 'report_user'@'localhost';
-show grants for 'admin_user'@'localhost';
-show grants for 'report_user'@'localhost';
-flush privileges;
+INSERT INTO appointments (patient_id, doctor_id, appointment_date) VALUES
+(1,1,'2025-03-01'),
+(2,1,'2025-03-02'),
+(1,2,'2025-03-03'),
+(3,1,'2025-03-04');
+
+INSERT INTO prescriptions (appointment_id, medicine, dosage) VALUES
+(1,'Paracetamol','2/day'),
+(2,'Ibuprofen','1/day'),
+(3,'Vitamin C','1/day');
+
+SELECT p.name, d.name, a.appointment_date
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id;
+
+SELECT d.name, COUNT(*) 
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+GROUP BY d.name;
+
+SELECT d.name, COUNT(*) AS total
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+GROUP BY d.name
+ORDER BY total DESC
+LIMIT 1;
+
+SELECT p.name, COUNT(*) 
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+GROUP BY p.name
+HAVING COUNT(*) >= 2;
+
+CREATE USER 'admin_user'@'localhost' IDENTIFIED BY '1234';
+CREATE USER 'report_user'@'localhost' IDENTIFIED BY '1234';
+
+GRANT ALL PRIVILEGES ON hospital_db.* TO 'admin_user'@'localhost';
+GRANT SELECT ON hospital_db.* TO 'report_user'@'localhost';
+
+FLUSH PRIVILEGES;
